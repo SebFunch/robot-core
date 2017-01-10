@@ -61,13 +61,18 @@ public class MainTeleOp extends OpMode {
 
     DcMotor motorRight;
     DcMotor motorLeft;
-    DcMotor motorHopper;
-    DcMotor motorLauncher;
 
-    Servo ballLoader;
-    double openPos;
-    double holdingPos;
-    double launchPos;
+    DcMotor motorHopper;
+
+    DcMotor motorLauncherL;
+    DcMotor motorLauncherR;
+
+    boolean slow;
+
+    //Servo ballLoader;
+    //double openPos;
+    //double holdingPos;
+    //double launchPos;
     private ElapsedTime runtime = new ElapsedTime();
 
     //region init()
@@ -79,19 +84,21 @@ public class MainTeleOp extends OpMode {
     @Override
     public void init() {
         // Launcher servo positions
-        openPos = 0.1;
-        holdingPos = 0.5;
-        launchPos = 1.0;
 
         // Main motors (wheels) -- reverse one of them
         motorLeft = hardwareMap.dcMotor.get("lMotor");
         motorRight = hardwareMap.dcMotor.get("rMotor");
         motorLeft.setDirection(DcMotor.Direction.REVERSE);
-        motorHopper = hardwareMap.dcMotor.get("hMotor");
-        motorLauncher = hardwareMap.dcMotor.get("launcher");
 
-        ballLoader = hardwareMap.servo.get("loader");
-        ballLoader.setPosition(openPos);
+        motorHopper = hardwareMap.dcMotor.get("hMotor");
+
+        motorLauncherL = hardwareMap.dcMotor.get("lLauncher");
+        motorLauncherR = hardwareMap.dcMotor.get("rLauncher");
+
+        slow = false;
+
+        //ballLoader = hardwareMap.servo.get("loader");
+        //ballLoader.setPosition(openPos);
     }
     //endregion
 
@@ -102,10 +109,28 @@ public class MainTeleOp extends OpMode {
         //region WHEELS
         // ## WHEEL MOTORS ##
         // Gets values from joysticks
-        float right1 = gamepad1.right_stick_y;
-        float left1 = gamepad1.left_stick_y;
+
+        float right1;
+        float left1;
+
+        if(slow) {
+            right1 = gamepad1.right_stick_y * (float)0.5;
+            left1 = gamepad1.left_stick_y * (float)0.5;
+        }
+        else{
+            right1 = gamepad1.right_stick_y;
+            left1 = gamepad1.left_stick_y;
+        }
+
 
         // clip the right/left values so that the values never exceed +/- 1
+        if(gamepad1.dpad_up) {
+            slow = false;
+        }
+        else if(gamepad1.dpad_down) {
+            slow = true;
+        }
+
         right1 = Range.clip(right1, -1, 1);
         left1 = Range.clip(left1, (float) -1.0, (float) 1.0);
 
@@ -131,13 +156,15 @@ public class MainTeleOp extends OpMode {
 
         // activates launcher motors
         if(gamepad2.y) {
-            motorLauncher.setPower(0.9);
+            motorLauncherL.setPower(0.9);
+            motorLauncherR.setPower(0.9);
         }
         else {
-            motorLauncher.setPower(0.0);
+            motorLauncherL.setPower(0.0);
+            motorLauncherR.setPower(0.0);
         }
 
-        // changes launcher servo positions
+        /* changes launcher servo positions
         if(gamepad2.x) {
             ballLoader.setPosition(openPos);
         }
@@ -148,7 +175,7 @@ public class MainTeleOp extends OpMode {
 
         if(gamepad2.b) {
             ballLoader.setPosition(launchPos);
-        }
+        }*/
 
         //endregion
     }

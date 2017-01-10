@@ -35,6 +35,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -59,16 +60,9 @@ public class TestAutonomous extends LinearOpMode {
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
 
-    DcMotor leftMotor = null;
-    DcMotor rightMotor = null;
-
-    int ticksPerMeter = 7168;
-    int startPositionL;
-    int startPositionR;
-
-    public double toMeter(int meters) {
-        return meters/ticksPerMeter;
-    }
+    DcMotor leftMotor;
+    DcMotor rightMotor;
+    int startingPos;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -79,15 +73,14 @@ public class TestAutonomous extends LinearOpMode {
          * to 'get' must correspond to the names assigned during the robot configuration
          * step (using the FTC Robot Controller app on the phone).
          */
-        leftMotor  = hardwareMap.dcMotor.get("lMotor");
+
+        leftMotor = hardwareMap.dcMotor.get("lMotor");
         rightMotor = hardwareMap.dcMotor.get("rMotor");
 
-        leftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightMotor.setDirection(DcMotor.Direction.REVERSE);
-        startPositionL = leftMotor.getCurrentPosition();
-        startPositionR = rightMotor.getCurrentPosition();
+        leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        startingPos = leftMotor.getCurrentPosition();
         // eg: Set the drive motor directions:
         // "Reverse" the motor that runs backwards when connected directly to the battery
         //leftMotor.setDirection(DcMotor.Direction.REVERSE); // Set to REVERSE if using AndyMark motors
@@ -100,24 +93,25 @@ public class TestAutonomous extends LinearOpMode {
         // run until the end of the match (driver presses `)
         while (opModeIsActive()) {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.update();
-            if(leftMotor.isBusy() && rightMotor.isBusy()){
+
+            if(leftMotor.isBusy()&&rightMotor.isBusy()) {
 
             }
             else {
-                sleep(500);
+                leftMotor.setTargetPosition(startingPos + goMeter((float)0.9592));
+                rightMotor.setTargetPosition(startingPos + goMeter((float)0.9592));
+
+
                 leftMotor.setPower(0.5);
                 rightMotor.setPower(0.5);
-                leftMotor.setTargetPosition(target + startPositionL);
-                rightMotor.setTargetPosition(target + startPositionR);
             }
-            while(leftMotor.isBusy() && rightMotor.isBusy()){
-            }
-            leftMotor.setPower(0.0);
-            rightMotor.setPower(0.0);
-
 
             idle(); // Always call idle() at the bottom of your while(opModeIsActive()) loop
         }
     }
+
+    public int goMeter(float distance) {
+        return (int) distance * 4779;
+    }
+
 }
